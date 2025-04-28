@@ -1,4 +1,4 @@
-# Flujos de Power Automate Yapé
+# Flujos de Power Automate Yape
 
 Aplicación para gestionar flujos de trabajo y proyectos, desarrollada con Python, PyQt6 y SQLite.
 

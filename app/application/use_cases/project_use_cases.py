@@ -6,8 +6,9 @@ from app.domain.entities.project import Project
 class ProjectUseCases:
     """Casos de uso para los proyectos"""
     
-    def __init__(self, project_service: ProjectService):
+    def __init__(self, project_service: ProjectService, repository):
         self.project_service = project_service
+        self.repository = repository  # Repositorio de proyectos
     
     def list_projects(self) -> List[Dict[str, Any]]:
         """Listar todos los proyectos con formato para presentación"""
@@ -21,6 +22,22 @@ class ProjectUseCases:
             return None
         return self._format_project(project)
     
+    def toggle_project_status(self, project_id: int) -> Dict[str, Any]:
+        """Cambiar el estado de un proyecto"""
+        project = self.repository.get_by_id(project_id)
+        if not project:
+            raise ValueError("El proyecto no existe.")
+        
+        # Alternar el estado
+        if project.is_active:
+            project.deactivate()
+        else:
+            project.activate()
+        
+        # Guardar los cambios en el repositorio
+        updated_project = self.repository.update(project)
+        return self._format_project(updated_project)
+    
     def add_new_project(self, name: str) -> Dict[str, Any]:
         """Agregar un nuevo proyecto"""
         project = self.project_service.create_project(name)
@@ -28,12 +45,32 @@ class ProjectUseCases:
     
     def change_project_status(self, project_id: int) -> Dict[str, Any]:
         """Cambiar el estado de un proyecto"""
-        project = self.project_service.toggle_project_status(project_id)
-        return self._format_project(project)
+        project = self.repository.get_by_id(project_id)
+        if not project:
+            raise ValueError("El proyecto no existe.")
+        
+        # Alternar el estado
+        if project.is_active:
+            project.deactivate()
+        else:
+            project.activate()
+        
+        # Guardar los cambios en el repositorio
+        updated_project = self.repository.update(project)
+        return self._format_project(updated_project)
     
     def remove_project(self, project_id: int) -> bool:
         """Eliminar un proyecto"""
         return self.project_service.delete_project(project_id)
+    
+    def update_project(self, project_id, name):
+        """Actualiza un proyecto existente"""
+        project = self.repository.get_by_id(project_id)
+        if not project:
+            raise ValueError("El proyecto no existe.")
+        
+        project.name = name
+        self.repository.update(project)
     
     def _format_project(self, project: Project) -> Dict[str, Any]:
         """Formatear un proyecto para presentación"""

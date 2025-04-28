@@ -117,7 +117,7 @@ class ProjectListView(QWidget):
         # Repositorio y casos de uso
         self.project_repository = SQLiteProjectRepository()
         self.project_service = ProjectService(self.project_repository)
-        self.project_use_cases = ProjectUseCases(self.project_service)
+        self.project_use_cases = ProjectUseCases(self.project_service, self.project_repository)
         
         # Layout principal
         self.layout = QVBoxLayout(self)

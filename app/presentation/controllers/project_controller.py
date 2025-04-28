@@ -6,13 +6,15 @@ from app.infrastructure.repositories.sqlite_project_repository import SQLiteProj
 class ProjectController:
     """Controlador para gestionar proyectos"""
     
-    def __init__(self, view):
-        self.view = view
+    def __init__(self, parent):
+        self.parent = parent
         
-        # Repositorios y servicios
+        # Inicializar el repositorio y el servicio
         self.project_repository = SQLiteProjectRepository()
         self.project_service = ProjectService(self.project_repository)
-        self.project_use_cases = ProjectUseCases(self.project_service)
+        
+        # Inicializar los casos de uso con el servicio y el repositorio
+        self.use_cases = ProjectUseCases(self.project_service, self.project_repository)
         
         # Conectar eventos
         self._connect_events()
@@ -25,11 +27,11 @@ class ProjectController:
     def load_projects(self):
         """Carga la lista de proyectos"""
         try:
-            projects = self.project_use_cases.list_projects()
+            projects = self.use_cases.list_projects()
             return projects
         except Exception as e:
             QMessageBox.critical(
-                self.view,
+                self.parent,
                 "Error",
                 f"No se pudieron cargar los proyectos: {str(e)}"
             )
@@ -38,11 +40,11 @@ class ProjectController:
     def get_project(self, project_id):
         """Obtiene un proyecto por su ID"""
         try:
-            project = self.project_use_cases.get_project_details(project_id)
+            project = self.use_cases.get_project_details(project_id)
             return project
         except Exception as e:
             QMessageBox.critical(
-                self.view,
+                self.parent,
                 "Error",
                 f"No se pudo cargar el proyecto: {str(e)}"
             )
@@ -54,41 +56,45 @@ class ProjectController:
             if not name.strip():
                 raise ValueError("El nombre del proyecto no puede estar vacío")
                 
-            project = self.project_use_cases.add_new_project(name)
+            project = self.use_cases.add_new_project(name)
             return project
         except Exception as e:
             QMessageBox.critical(
-                self.view,
+                self.parent,
                 "Error",
                 f"No se pudo agregar el proyecto: {str(e)}"
             )
             return None
     
-    def toggle_project_status(self, project_id):
+    def toggle_project_status(self, project_id: int):
         """Cambia el estado de un proyecto"""
         try:
-            project = self.project_use_cases.change_project_status(project_id)
-            return project
+            return self.use_cases.toggle_project_status(project_id)
+        except ValueError as e:
+            QMessageBox.warning(
+                self.parent,
+                "Error",
+                str(e)
+            )
         except Exception as e:
             QMessageBox.critical(
-                self.view,
+                self.parent,
                 "Error",
-                f"No se pudo cambiar el estado del proyecto: {str(e)}"
+                f"Ocurrió un error inesperado: {str(e)}"
             )
-            return None
     
     def delete_project(self, project_id):
         """Elimina un proyecto"""
         try:
             confirmation = QMessageBox.question(
-                self.view,
+                self.parent,
                 "Confirmar Eliminación",
                 "¿Está seguro de que desea eliminar este proyecto? Se eliminarán también todos los flujos asociados. Esta acción no se puede deshacer.",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
             )
             
             if confirmation == QMessageBox.StandardButton.Yes:
-                success = self.project_use_cases.remove_project(project_id)
+                success = self.use_cases.remove_project(project_id)
                 if success:
                     return True
                 else:
@@ -96,8 +102,12 @@ class ProjectController:
             return False
         except Exception as e:
             QMessageBox.critical(
-                self.view,
+                self.parent,
                 "Error",
                 f"No se pudo eliminar el proyecto: {str(e)}"
             )
             return False
+    
+    def update_project(self, project_id, name):
+        """Actualiza un proyecto existente"""
+        self.use_cases.update_project(project_id, name)

@@ -11,15 +11,18 @@ from app.presentation.views.project_detail_view import ProjectDetailView
 from app.presentation.views.add_project_view import AddProjectView
 from app.presentation.views.add_flow_view import AddFlowView
 from app.presentation.views.edit_flow_view import EditFlowView
+from app.presentation.views.edit_project_view import EditProjectView
 
 class MainWindow(QMainWindow):
     """Ventana principal de la aplicación"""
+    
+    edit_project_requested = pyqtSignal(int, str)  # project_id, project_name
     
     def __init__(self):
         super().__init__()
         
         # Configuración de la ventana
-        self.setWindowTitle("Flujos de Power Automate Yapé")
+        self.setWindowTitle("Flujos de Power Automate Yape")
         self.setMinimumSize(900, 600)
         
         # Cargar estilos
@@ -46,6 +49,7 @@ class MainWindow(QMainWindow):
         self.add_project_view = None
         self.add_flow_view = None
         self.edit_flow_view = None
+        self.edit_project_view = None  # Agregar esta línea
         
         # Iniciar con la vista de lista de proyectos
         self._initialize_views()
@@ -73,7 +77,7 @@ class MainWindow(QMainWindow):
         header_layout = QHBoxLayout(header)
         
         # Título de la aplicación
-        title = QLabel("Flujos de Power Automate Yapé")
+        title = QLabel("Flujos de Power Automate Yape")
         title.setObjectName("titleLabel")
         header_layout.addWidget(title)
         
@@ -106,6 +110,7 @@ class MainWindow(QMainWindow):
             self.project_detail_view.add_flow_requested.connect(self.show_add_flow)
             self.project_detail_view.edit_flow_requested.connect(self.show_edit_flow)
             self.project_detail_view.project_updated.connect(self._refresh_project_list)
+            self.project_detail_view.edit_project_requested.connect(self.show_edit_project)
         
         self.project_detail_view.set_project(project_id, project_name)
         self.stacked_widget.setCurrentWidget(self.project_detail_view)
@@ -155,6 +160,21 @@ class MainWindow(QMainWindow):
         
         self.edit_flow_view.set_flow(flow_id, project_id)
         self.stacked_widget.setCurrentWidget(self.edit_flow_view)
+    
+    def show_edit_project(self, project_id, project_name):
+        """Muestra la vista de edición de proyecto"""
+        if not self.edit_project_view:
+            self.edit_project_view = EditProjectView()
+            self.stacked_widget.addWidget(self.edit_project_view)
+            
+            # Conectar señales
+            self.edit_project_view.back_requested.connect(
+                lambda: self.stacked_widget.setCurrentWidget(self.project_detail_view)
+            )
+            self.edit_project_view.project_updated.connect(self._refresh_project_list)
+        
+        self.edit_project_view.set_project(project_id, project_name)
+        self.stacked_widget.setCurrentWidget(self.edit_project_view)
     
     def on_project_added(self):
         """Manejador para cuando se agrega un proyecto"""

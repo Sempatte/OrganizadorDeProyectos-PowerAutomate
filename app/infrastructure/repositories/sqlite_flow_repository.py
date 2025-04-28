@@ -1,3 +1,5 @@
+
+# app/infrastructure/repositories/sqlite_flow_repository.py
 from typing import List, Optional
 from datetime import datetime
 from app.domain.entities.flow import Flow, FlowStatus, RecurrenceType
@@ -10,7 +12,7 @@ class SQLiteFlowRepository(FlowRepository):
     def __init__(self):
         self.db = Database()
     
-    def _map_to_entity(self, data: dict) -> Optional[Flow]:
+    def _map_to_entity(self, data: dict) -> Flow:
         """Convierte un diccionario de datos a una entidad Flow"""
         if not data:
             return None

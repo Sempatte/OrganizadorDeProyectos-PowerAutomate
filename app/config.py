@@ -18,7 +18,7 @@ DATABASE = {
 
 # Configuración de la interfaz de usuario
 UI = {
-    'app_name': "Flujos de Power Automate Yapé",
+    'app_name': "Flujos de Power Automate Yape",
     'min_width': 900,
     'min_height': 600,
 }

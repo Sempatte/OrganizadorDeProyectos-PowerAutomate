@@ -17,6 +17,7 @@ class ProjectDetailView(QWidget):
     add_flow_requested = pyqtSignal(int, str)  # project_id, project_name
     edit_flow_requested = pyqtSignal(int, int)  # flow_id, project_id
     project_updated = pyqtSignal(int)  # project_id
+    edit_project_requested = pyqtSignal(int, str)  # project_id, project_name
     
     def __init__(self):
         super().__init__()
@@ -194,6 +195,26 @@ class ProjectDetailView(QWidget):
         """)
         self.delete_project_button.clicked.connect(self._on_delete_project)
         delete_container.addWidget(self.delete_project_button)
+
+        self.edit_project_button = QPushButton("Editar Proyecto")
+        self.edit_project_button.setStyleSheet("""
+            QPushButton {
+                background-color: #4a86e8;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 8px 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #3b78e7;
+            }
+            QPushButton:pressed {
+                background-color: #3367d6;
+            }
+        """)
+        self.edit_project_button.clicked.connect(self._on_edit_project)
+        delete_container.addWidget(self.edit_project_button)
         
         info_layout.addLayout(delete_container, 1)
         
@@ -390,6 +411,11 @@ class ProjectDetailView(QWidget):
         success = self.project_controller.delete_project(self.current_project_id)
         if success:
             self.back_requested.emit()
+    
+    def _on_edit_project(self):
+        """Manejador para editar el proyecto"""
+        if self.current_project_id and self.current_project_name:
+            self.edit_project_requested.emit(self.current_project_id, self.current_project_name)
     
     def _on_flow_double_clicked(self, row, column):
         """Manejador para el evento de doble clic en un flujo"""
