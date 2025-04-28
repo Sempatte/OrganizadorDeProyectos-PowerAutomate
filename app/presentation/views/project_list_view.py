@@ -43,23 +43,43 @@ class ProjectCard(QFrame):
         main_layout.setSpacing(15)
         
         # Contenedor superior para título y estado
-        top_container = QVBoxLayout()
-        top_container.setSpacing(5)
+        top_container = QHBoxLayout()
+        top_container.setSpacing(10)
         
         # Nombre del proyecto
-        name_label = QLabel(project_data['name'])
+        name_label = QLabel(self.project_data['name'])
         name_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #333333;")
         name_label.setWordWrap(True)
         top_container.addWidget(name_label)
+        
+        # Indicador de estado (punto verde o rojo)
+        status_indicator = QLabel()
+        status_indicator.setFixedSize(16, 16)  # Ligeramente más grande para asegurar visibilidad
+        status_indicator.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Crear un widget circular para el indicador
+        indicator_widget = QWidget(status_indicator)
+        indicator_widget.setFixedSize(10, 10)  # Tamaño del punto
+        indicator_widget.setStyleSheet("""
+            background-color: %s;
+            border-radius: 5px;
+        """ % ('#4caf50' if self.project_data['is_active'] else '#f44336'))
+
+        # Centrar el indicador en su contenedor
+        indicator_layout = QHBoxLayout(status_indicator)
+        indicator_layout.setContentsMargins(3, 3, 3, 3)
+        indicator_layout.addWidget(indicator_widget)
+
+        top_container.addWidget(status_indicator)
+        
+        main_layout.addLayout(top_container)
         
         # Línea divisoria
         line = QFrame()
         line.setFrameShape(QFrame.Shape.HLine)
         line.setFrameShadow(QFrame.Shadow.Sunken)
         line.setStyleSheet("background-color: #e0e0e0;")
-        top_container.addWidget(line)
-        
-        main_layout.addLayout(top_container)
+        main_layout.addWidget(line)
         
         # Contenedor de información
         info_container = QVBoxLayout()
@@ -67,34 +87,28 @@ class ProjectCard(QFrame):
         
         # Estado del proyecto
         status_layout = QHBoxLayout()
-        status_text = "Activo" if project_data['is_active'] else "Inactivo"
-        status_obj_name = "activeStatus" if project_data['is_active'] else "inactiveStatus"
-        
         status_label = QLabel("Estado:")
         status_label.setStyleSheet("font-weight: bold; color: #555555;")
-        
-        status_value = QLabel(status_text)
-        status_value.setObjectName(status_obj_name)
-        
         status_layout.addWidget(status_label)
-        status_layout.addWidget(status_value)
+
+        status_text = QLabel("Activo" if self.project_data['is_active'] else "Inactivo")
+        status_text.setStyleSheet("font-size: 14px; color: #555555;")
+        status_layout.addWidget(status_text)
+
         status_layout.addStretch()
-        
         info_container.addLayout(status_layout)
         
         # Fecha de creación
         date_layout = QHBoxLayout()
-        
         date_label = QLabel("Creado:")
         date_label.setStyleSheet("font-weight: bold; color: #555555;")
-        
-        date_value = QLabel(project_data['created_at'])
-        date_value.setStyleSheet("color: #555555;")
-        
         date_layout.addWidget(date_label)
+
+        date_value = QLabel(self.project_data['created_at'])
+        date_value.setStyleSheet("font-size: 14px; color: #555555;")
         date_layout.addWidget(date_value)
+
         date_layout.addStretch()
-        
         info_container.addLayout(date_layout)
         
         main_layout.addLayout(info_container)

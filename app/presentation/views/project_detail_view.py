@@ -98,6 +98,29 @@ class ProjectDetailView(QWidget):
         """)
         self.add_flow_button.clicked.connect(self._on_add_flow)
         header_container.addWidget(self.add_flow_button)
+
+        # Botón Generar Diagrama
+        self.generate_diagram_button = QPushButton("Generar Diagrama")
+        self.generate_diagram_button.setMinimumWidth(150)
+        self.generate_diagram_button.setStyleSheet("""
+            QPushButton {
+                background-color: #4caf50;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 10px 20px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #43a047;
+            }
+            QPushButton:pressed {
+                background-color: #388e3c;
+            }
+        """)
+        self.generate_diagram_button.clicked.connect(self._on_generate_diagram)
+        header_container.addWidget(self.generate_diagram_button)
         
         self.layout.addLayout(header_container)
         
@@ -509,3 +532,20 @@ class ProjectDetailView(QWidget):
         success = self.flow_controller.delete_flow(flow_id)
         if success:
             self.refresh_flows()
+
+    def _on_generate_diagram(self):
+        """Manejador para generar el diagrama de flujo"""
+        if not self.current_project_id:
+            QMessageBox.warning(self, "Error", "No se ha seleccionado un proyecto.")
+            return
+
+        try:
+            from app.utils.diagram_generator import generate_project_diagram
+            diagram_path = generate_project_diagram(self.current_project_id)
+            QMessageBox.information(
+                self,
+                "Diagrama Generado",
+                f"El diagrama se ha generado correctamente y se ha guardado en:\n{diagram_path}"
+            )
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"No se pudo generar el diagrama: {str(e)}")
